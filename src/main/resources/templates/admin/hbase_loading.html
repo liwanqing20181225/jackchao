@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:with="title='hbase—loading',active='settings'">
+<header th:replace="admin/header::headerFragment(${title},${active})"></header>
+<link th:href="@{/admin/plugins/toggles/toggles.css}" rel="stylesheet"/>
+<body class="fixed-left">
+<div id="wrapper">
+    <div th:replace="admin/header::header-body"></div>
+    <div class="content-page">
+        <div class="content">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="panel panel-color panel-primary">
+                            <div class="panel-heading">
+                                <h3 class="panel-title">hbase-loading脚本生成</h3>
+                            </div>
+                            <div class="panel-body">
+                                <form class="form-horizontal" role="form" id="global-form">
+                                    <div class="form-group">
+                                        <label class="col-md-3 control-label">hive表名</label>
+                                        <div class="col-md-9">
+                                            <input type="text" class="input-lg input-border" name="site_title" placeholder="hive表名"
+                                                   th:value="${options.site_title}" required="required" aria-required="true" />
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="col-md-3 control-label">hbase表名</label>
+                                        <div class="col-md-9">
+                                            <input type="text" class="input-lg input-border" name="site_description" placeholder="hbase表名"
+                                                   th:value="测试" required="required" aria-required="true"/>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="col-md-3 control-label">上传文件</label>
+                                        <div class="col-md-9">
+                                            <button type="button" class="input-lg input-border" name="site_record" placeholder="选择文件"
+                                                    th:value="测试" required="required" aria-required="true">选择文件</button>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label class="col-md-3 control-label">环境参数</label>
+                                        <div class="col-md-9">
+                                            <select name="site_theme" class="input-lg input-border">
+                                                <option value="default" th:selected="${options.site_theme=='default'}?true:false">zs116_test</option>
+                                                <option value="default" th:selected="${options.site_theme=='default'}?true:false">zs116_offline</option>
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label class="col-md-3 control-label">dataBase名</label>
+                                        <div class="col-md-9">
+                                            <input type="text" class="input-lg input-border" name="site_description" placeholder="dataBase名"
+                                                   th:value="${options.site_description}" required="required" aria-required="true"/>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="col-md-3 control-label">输出路径</label>
+                                        <div class="col-md-9">
+                                            <button type="button" class="input-lg input-border" name="site_description" placeholder="输出路径"
+                                                    th:value="${options.site_description}" required="required" aria-required="true">输出路径</button>
+                                        </div>
+                                    </div>
+
+                                    <input type="hidden" name="allow_install" id="allow_install"/>
+                                    <div class="clearfix pull-right">
+                                        <a class="btn btn-default waves-effect waves-light" th:href="@{/admin/article}">重置</a>
+                                        <button type="button" class="btn btn-primary waves-effect waves-light"
+                                                onclick="subArticle('publish');">
+                                            清空
+                                        </button>
+                                        <button type="button" class="btn btn-warning waves-effect waves-light"
+                                                onclick="subArticle('draft');">
+                                            保存
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="clearfix"></div>
+
+                </div>
+                <div th:replace="admin/footer :: footer-content"></div>
+            </div>
+        </div>
+    </div>
+</div>
+<div th:replace="admin/footer :: footer"></div>
+<script src="//cdn.bootcss.com/jquery-toggles/2.0.4/toggles.min.js"></script>
+<script type="text/javascript">
+    /*<![CDATA[*/
+    var tale = new $.tale();
+
+    /**
+     * 保存全局设置
+     */
+    function saveSetting() {
+        var param = $('#global-form').serialize();
+        tale.post({
+            url : '/admin/setting',
+            data: param,
+            success: function (result) {
+                if(result && result.success){
+                    tale.alertOk('设置保存成功');
+                } else {
+                    tale.alertError(result.msg || '设置保存失败');
+                }
+            }
+        });
+    }
+
+    /**
+     * 保存个性化设置
+     */
+    function saveIndiviSetting() {
+        var param = $('#indivi-form').serialize();
+        tale.post({
+            url : '/admin/setting',
+            data: param,
+            success: function (result) {
+                if(result && result.success){
+                    tale.alertOk('设置保存成功');
+                } else {
+                    tale.alertError(result.msg || '设置保存失败');
+                }
+            }
+        });
+    }
+    /**
+     * 设置是否允许重新安装
+     */
+    function allow_reinstall(obj) {
+        var this_ = $(obj);
+        var on = this_.find('.toggle-on.active').length;
+        var off = this_.find('.toggle-off.active').length;
+        if (on == 1) {
+            $('#allow_install').val(0);
+        }
+        if (off == 1) {
+            $('#allow_install').val(1);
+        }
+    }
+
+    /**
+     * 系统备份
+     * @param type
+     */
+    function backup(type) {
+        var param = {
+            bk_type: type,
+            bk_path: $('#backup_dir').val()
+        };
+        tale.post({
+            url : '/admin/setting/backup',
+            data: param,
+            success: function (result) {
+                if(result && result.success){
+                    if(result.payload && result.payload.attach_path){
+                        swal('备份成功', '您的附件备份在 <mark>'+ result.payload.attach_path +'</mark><br/><br/>' +
+                            '主题备份存储在 <mark>'+ result.payload.theme_path +'</mark>', 'success');
+                        $('#backup_dir').val('');
+                    }
+                    if(result.payload.sql_path){
+                        window.location.href = '/upload/' + result.payload.sql_path;
+                    }
+                } else {
+                    tale.alertError(result.msg || '备份失败');
+                }
+            }
+        });
+    }
+
+    $('.allow-1').toggles({
+        on: true,
+        text: {
+            on: '开启',
+            off: '关闭'
+        }
+    });
+    $('.allow-0').toggles({
+        off: true,
+        text: {
+            on: '开启',
+            off: '关闭'
+        }
+    });
+    /*]]>*/
+</script>
+</body>
+</html>
